@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>手机访问说明</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: "Microsoft YaHei", system-ui, sans-serif;
+        line-height: 1.7;
+        background: #101011;
+        color: #f4f0e8;
+      }
+      main {
+        width: min(760px, calc(100% - 28px));
+        margin: 24px auto;
+        padding: 20px;
+        border: 1px solid #333;
+        border-radius: 8px;
+        background: #1b1b1f;
+      }
+      code {
+        display: inline-block;
+        padding: 2px 7px;
+        border-radius: 4px;
+        background: #060606;
+        color: #f1bd3f;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>手机访问说明</h1>
+      <p>1. 电脑和手机连接同一个 Wi-Fi。</p>
+      <p>2. 电脑双击 <code>START_GAME.cmd</code>。</p>
+      <p>3. 启动窗口里会显示手机访问地址，格式类似：</p>
+      <p><code>http://192.168.1.4:3000</code></p>
+      <p>4. 在手机浏览器打开这个地址，即可注册账号并排位。</p>
+      <p>如果手机打不开，通常是 Windows 防火墙没有放行 3000 端口。</p>
+    </main>
+  </body>
+</html>

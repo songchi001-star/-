@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>联网小球排位对战 V1 使用说明</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: "Microsoft YaHei", system-ui, sans-serif;
+        line-height: 1.75;
+        background: #111;
+        color: #f4f0e8;
+      }
+      main {
+        width: min(860px, calc(100% - 32px));
+        margin: 32px auto;
+        background: #1c1c20;
+        border: 1px solid #333;
+        border-radius: 8px;
+        padding: 24px;
+      }
+      code {
+        background: #090909;
+        border: 1px solid #333;
+        border-radius: 4px;
+        padding: 2px 6px;
+      }
+      a {
+        color: #f4c54e;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>联网小球排位对战 V1 使用说明</h1>
+      <h2>启动游戏</h2>
+      <p>直接双击当前文件夹里的 <code>启动游戏.cmd</code>。</p>
+      <p>启动后用浏览器打开 <code>http://localhost:3000</code>。</p>
+
+      <h2>当前功能</h2>
+      <ol>
+        <li>注册账号和登录账号。</li>
+        <li>选择职业：三叉戟 / 近战吸血鬼。</li>
+        <li>点击开始排位。</li>
+        <li>优先匹配真人，约 3.5 秒没有真人时自动使用 AI 假人补位。</li>
+        <li>服务端自动结算战斗，前端播放小球对撞、技能、血量和胜负结果。</li>
+        <li>结算排位分、胜负场次和排行榜。</li>
+      </ol>
+
+      <h2>如果启动失败</h2>
+      <p>说明电脑没有可用的 Node.js，或者 Node.js 没安装成功。</p>
+      <p>可以安装 Node.js LTS：<a href="https://nodejs.org/">https://nodejs.org/</a></p>
+
+      <h2>数据文件</h2>
+      <p>账号、战绩和排行榜现在保存在 <code>data\db.json</code>。</p>
+      <p>这是 V1 开发版做法。正式上线前建议替换成 PostgreSQL 数据库。</p>
+    </main>
+  </body>
+</html>

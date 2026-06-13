@@ -1,0 +1,13 @@
+{
+  "name": "ball-duel-ranked-v1",
+  "version": "0.1.0",
+  "private": true,
+  "description": "V1 ranked auto battle game: Trident vs melee Vampire.",
+  "scripts": {
+    "dev": "node server/index.js",
+    "start": "node server/index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

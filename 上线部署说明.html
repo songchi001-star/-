@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>上线部署说明</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: "Microsoft YaHei", system-ui, sans-serif;
+        line-height: 1.75;
+        background: #101011;
+        color: #f4f0e8;
+      }
+      main {
+        width: min(900px, calc(100% - 28px));
+        margin: 24px auto;
+        padding: 22px;
+        border: 1px solid #333;
+        border-radius: 8px;
+        background: #1b1b1f;
+      }
+      code {
+        padding: 2px 7px;
+        border-radius: 4px;
+        background: #060606;
+        color: #f1bd3f;
+      }
+      li {
+        margin: 8px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>让别人也能玩：上线部署说明</h1>
+
+      <h2>目标</h2>
+      <p>别人不需要连你的 Wi-Fi，只要打开一个公网网址，例如 <code>https://你的游戏域名.com</code>，就能注册、排位、匹配和手机游玩。</p>
+
+      <h2>最快测试方案</h2>
+      <ol>
+        <li>把项目上传到 GitHub。</li>
+        <li>登录 Railway 或 Render。</li>
+        <li>导入这个 GitHub 仓库。</li>
+        <li>启动命令填：<code>node server/index.js</code></li>
+        <li>环境变量设置：<code>TOKEN_SECRET</code>，填一段随机长字符串。</li>
+        <li>平台会给你一个公网网址，手机和电脑都能打开。</li>
+      </ol>
+
+      <h2>当前版本注意</h2>
+      <p>现在账号和战绩保存在 <code>data/db.json</code>。这适合测试，不适合正式运营。正式版应该改成 PostgreSQL 数据库，否则云服务重启或换机器时数据可能丢失。</p>
+
+      <h2>正式版本需要</h2>
+      <ol>
+        <li>公网服务器：Railway、Render、Fly.io、腾讯云、阿里云都可以。</li>
+        <li>数据库：PostgreSQL。</li>
+        <li>实时通信：建议从当前轮询升级为 WebSocket。</li>
+        <li>域名和 HTTPS：方便手机直接访问。</li>
+        <li>日志和后台：查看用户、战斗、错误。</li>
+      </ol>
+    </main>
+  </body>
+</html>

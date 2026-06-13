@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: ball-duel-ranked
+    env: node
+    plan: free
+    buildCommand: ""
+    startCommand: "node server/index.js"
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: TOKEN_SECRET
+        generateValue: true

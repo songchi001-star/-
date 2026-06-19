@@ -1,14 +1,14 @@
 const app = document.querySelector("#app");
 
 const t = {
-  title: "\u5c0f\u7403\u6392\u4f4d\u5bf9\u6218",
-  subtitle: "\u5f02\u6b65\u6392\u4f4d \u00b7 \u73a9\u5bb6\u6570\u636e\u5bf9\u649e V1",
+  title: "\u4ed9\u64c2\u5c0f\u7403",
+  subtitle: "\u897f\u6e38\u795e\u5c06 \u00b7 \u5f02\u6b65\u4ed9\u64c2\u6392\u4f4d V1",
   login: "\u767b\u5f55",
   register: "\u6ce8\u518c",
   username: "\u7528\u6237\u540d",
   nickname: "\u6635\u79f0",
   password: "\u5bc6\u7801",
-  class: "\u51fa\u6218\u804c\u4e1a",
+  class: "\u51fa\u6218\u5316\u8eab",
   enterRank: "\u8fdb\u5165\u6392\u4f4d",
   createAccount: "\u521b\u5efa\u8d26\u53f7",
   startRank: "\u5f00\u59cb\u6392\u4f4d",
@@ -17,12 +17,12 @@ const t = {
   score: "\u6392\u4f4d\u5206",
   wins: "\u80dc\u573a",
   losses: "\u8d1f\u573a",
-  tridentDesc: "\u7a7f\u523a\u7206\u53d1\u3001\u51fb\u9000\u63a7\u5236\uff0c\u547d\u4e2d\u4e00\u6b21\u5c31\u80fd\u62c9\u5f00\u8840\u91cf\u5dee\u3002",
-  vampireDesc: "\u8fd1\u6218\u5438\u8840\u3001\u8d34\u8138\u6495\u54ac\uff0c\u78b0\u649e\u8d8a\u591a\u8d8a\u80fd\u56de\u8840\u3002",
-  guardianDesc: "\u9ad8\u8840\u91cf\u62a4\u7532\u3001\u76fe\u51fb\u5f39\u5f00\uff0c\u9760\u786c\u5ea6\u628a\u5bf9\u624b\u78e8\u5012\u3002",
-  pyromancerDesc: "\u4e2d\u8ddd\u79bb\u706b\u7206\u3001\u8303\u56f4\u538b\u8840\uff0c\u9002\u5408\u5728\u78b0\u649e\u524d\u5148\u6253\u6d88\u8017\u3002",
-  assassinDesc: "\u9ad8\u901f\u7a81\u88ad\u3001\u7206\u53d1\u4f24\u5bb3\uff0c\u8eab\u677f\u8106\u4f46\u4e0a\u9650\u9ad8\u3002",
-  stormDesc: "\u95ea\u7535\u5e72\u6270\u3001\u8f68\u8ff9\u6253\u4e71\uff0c\u8ba9\u5bf9\u624b\u66f4\u96be\u7a33\u5b9a\u78b0\u649e\u3002",
+  tridentDesc: "\u5b59\u609f\u7a7a\uff1a\u91d1\u7b8d\u68d2\u7a81\u8fdb\u3001\u51fb\u9000\u7206\u53d1\uff0c\u4e00\u68d2\u547d\u4e2d\u5c31\u80fd\u6253\u4e71\u5bf9\u624b\u8282\u594f\u3002",
+  vampireDesc: "\u767d\u9aa8\u592b\u4eba\uff1a\u6444\u9b42\u5438\u8840\u3001\u8d34\u8eab\u7eed\u822a\uff0c\u78b0\u649e\u8d8a\u591a\u8d8a\u96be\u88ab\u8017\u6b7b\u3002",
+  guardianDesc: "\u725b\u9b54\u738b\uff1a\u9ad8\u8840\u91cf\u62a4\u4f53\u3001\u6df7\u94c1\u68cd\u9707\u5730\uff0c\u9760\u786c\u5ea6\u548c\u51fb\u9000\u538b\u573a\u3002",
+  pyromancerDesc: "\u54ea\u5412\uff1a\u4e09\u6627\u771f\u706b\u3001\u4e2d\u8ddd\u79bb\u7206\u53d1\uff0c\u5728\u78b0\u649e\u524d\u5148\u628a\u8840\u91cf\u70e7\u4e0b\u6765\u3002",
+  assassinDesc: "\u4e8c\u90ce\u795e\uff1a\u5929\u773c\u7834\u9635\u3001\u9ad8\u901f\u7a81\u88ad\uff0c\u8eab\u677f\u8106\u4f46\u7206\u53d1\u4e0a\u9650\u5f88\u9ad8\u3002",
+  stormDesc: "\u96f7\u9707\u5b50\uff1a\u4e94\u96f7\u5e72\u6270\u3001\u8f68\u8ff9\u6253\u4e71\uff0c\u8ba9\u5bf9\u624b\u66f4\u96be\u7a33\u5b9a\u78b0\u649e\u3002",
   matching: "\u6b63\u5728\u751f\u6210\u5bf9\u624b",
   matchingHint: "\u4f1a\u76f4\u63a5\u4ece\u73a9\u5bb6\u6570\u636e\u4e2d\u9009\u62e9\u8bc4\u5206\u63a5\u8fd1\u7684\u5bf9\u624b\uff1b\u6ca1\u6709\u6570\u636e\u65f6\u7531 AI \u8865\u4f4d\u3002",
   cancel: "\u53d6\u6d88\u5339\u914d",
@@ -49,37 +49,37 @@ const classCopy = {
 const fallbackClasses = [
   {
     id: "trident",
-    name: "\u4e09\u53c9\u621f",
+    name: "\u5b59\u609f\u7a7a",
     color: "#f1bd3f",
     accent: "#fff1ad"
   },
   {
     id: "vampire",
-    name: "\u8fd1\u6218\u5438\u8840\u9b3c",
+    name: "\u767d\u9aa8\u592b\u4eba",
     color: "#9b2340",
     accent: "#ff7895"
   },
   {
     id: "guardian",
-    name: "\u94a2\u76fe\u536b",
+    name: "\u725b\u9b54\u738b",
     color: "#4f8fbc",
     accent: "#c8efff"
   },
   {
     id: "pyromancer",
-    name: "\u706b\u7130\u6cd5\u5e08",
+    name: "\u54ea\u5412",
     color: "#e24b2f",
     accent: "#ffd08a"
   },
   {
     id: "assassin",
-    name: "\u5f71\u5203\u523a\u5ba2",
+    name: "\u4e8c\u90ce\u795e",
     color: "#6f58d9",
     accent: "#d7ccff"
   },
   {
     id: "storm",
-    name: "\u98ce\u66b4\u672f\u58eb",
+    name: "\u96f7\u9707\u5b50",
     color: "#31a6a8",
     accent: "#b8ffff"
   }
@@ -197,12 +197,12 @@ function renderAuth() {
   renderShell(`
     <section class="auth-grid">
       <div class="poster" aria-hidden="true">
-        <div class="poster-title">WHO WILL WIN?</div>
-        <div class="preview-ball trident">100</div>
-        <div class="preview-ball vampire">100</div>
+        <div class="poster-title">仙擂开战</div>
+        <div class="preview-ball trident">悟空</div>
+        <div class="preview-ball vampire">二郎</div>
         <div class="poster-foot">
           <span>${t.live}</span>
-          <span>1V1 AUTO BATTLE</span>
+          <span>1V1 AUTO IMMORTAL DUEL</span>
         </div>
       </div>
       <form class="auth-panel panel" data-auth-form>

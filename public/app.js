@@ -2,7 +2,7 @@ const app = document.querySelector("#app");
 
 const t = {
   title: "\u5c0f\u7403\u6392\u4f4d\u5bf9\u6218",
-  subtitle: "\u4e09\u53c9\u621f VS \u8fd1\u6218\u5438\u8840\u9b3c · \u5b9e\u65f6\u8054\u673a V1",
+  subtitle: "\u5f02\u6b65\u6392\u4f4d \u00b7 \u73a9\u5bb6\u6570\u636e\u5bf9\u649e V1",
   login: "\u767b\u5f55",
   register: "\u6ce8\u518c",
   username: "\u7528\u6237\u540d",
@@ -19,12 +19,17 @@ const t = {
   losses: "\u8d1f\u573a",
   tridentDesc: "\u7a7f\u523a\u7206\u53d1\u3001\u51fb\u9000\u63a7\u5236\uff0c\u547d\u4e2d\u4e00\u6b21\u5c31\u80fd\u62c9\u5f00\u8840\u91cf\u5dee\u3002",
   vampireDesc: "\u8fd1\u6218\u5438\u8840\u3001\u8d34\u8138\u6495\u54ac\uff0c\u78b0\u649e\u8d8a\u591a\u8d8a\u80fd\u56de\u8840\u3002",
-  matching: "\u6b63\u5728\u5339\u914d\u5bf9\u624b",
-  matchingHint: "\u4f18\u5148\u5339\u914d\u771f\u4eba\uff1b\u82e5\u77ed\u65f6\u95f4\u65e0\u4eba\uff0c\u5c06\u7531 AI \u8865\u4f4d\u5f00\u6218\u3002",
+  guardianDesc: "\u9ad8\u8840\u91cf\u62a4\u7532\u3001\u76fe\u51fb\u5f39\u5f00\uff0c\u9760\u786c\u5ea6\u628a\u5bf9\u624b\u78e8\u5012\u3002",
+  pyromancerDesc: "\u4e2d\u8ddd\u79bb\u706b\u7206\u3001\u8303\u56f4\u538b\u8840\uff0c\u9002\u5408\u5728\u78b0\u649e\u524d\u5148\u6253\u6d88\u8017\u3002",
+  assassinDesc: "\u9ad8\u901f\u7a81\u88ad\u3001\u7206\u53d1\u4f24\u5bb3\uff0c\u8eab\u677f\u8106\u4f46\u4e0a\u9650\u9ad8\u3002",
+  stormDesc: "\u95ea\u7535\u5e72\u6270\u3001\u8f68\u8ff9\u6253\u4e71\uff0c\u8ba9\u5bf9\u624b\u66f4\u96be\u7a33\u5b9a\u78b0\u649e\u3002",
+  matching: "\u6b63\u5728\u751f\u6210\u5bf9\u624b",
+  matchingHint: "\u4f1a\u76f4\u63a5\u4ece\u73a9\u5bb6\u6570\u636e\u4e2d\u9009\u62e9\u8bc4\u5206\u63a5\u8fd1\u7684\u5bf9\u624b\uff1b\u6ca1\u6709\u6570\u636e\u65f6\u7531 AI \u8865\u4f4d\u3002",
   cancel: "\u53d6\u6d88\u5339\u914d",
-  live: "\u5b9e\u65f6\u8054\u673a",
+  live: "\u5f02\u6b65\u6392\u4f4d",
   bot: "AI \u8865\u4f4d",
   human: "\u771f\u4eba\u6392\u4f4d",
+  ghost: "\u73a9\u5bb6\u6570\u636e",
   win: "\u80dc\u5229",
   lose: "\u5931\u8d25",
   again: "\u7ee7\u7eed\u6392\u4f4d",
@@ -34,7 +39,11 @@ const t = {
 
 const classCopy = {
   trident: t.tridentDesc,
-  vampire: t.vampireDesc
+  vampire: t.vampireDesc,
+  guardian: t.guardianDesc,
+  pyromancer: t.pyromancerDesc,
+  assassin: t.assassinDesc,
+  storm: t.stormDesc
 };
 
 const fallbackClasses = [
@@ -49,6 +58,30 @@ const fallbackClasses = [
     name: "\u8fd1\u6218\u5438\u8840\u9b3c",
     color: "#9b2340",
     accent: "#ff7895"
+  },
+  {
+    id: "guardian",
+    name: "\u94a2\u76fe\u536b",
+    color: "#4f8fbc",
+    accent: "#c8efff"
+  },
+  {
+    id: "pyromancer",
+    name: "\u706b\u7130\u6cd5\u5e08",
+    color: "#e24b2f",
+    accent: "#ffd08a"
+  },
+  {
+    id: "assassin",
+    name: "\u5f71\u5203\u523a\u5ba2",
+    color: "#6f58d9",
+    accent: "#d7ccff"
+  },
+  {
+    id: "storm",
+    name: "\u98ce\u66b4\u672f\u58eb",
+    color: "#31a6a8",
+    accent: "#b8ffff"
   }
 ];
 
@@ -245,7 +278,7 @@ function renderRanked() {
               <span class="class-dot" style="background: radial-gradient(circle at 35% 30%, ${item.accent}, ${item.color} 56%, #050505);"></span>
               <span>
                 <strong>${item.name}</strong>
-                <small>${classCopy[item.id]}</small>
+                <small>${classCopy[item.id] || ""}</small>
               </span>
             </button>
           `).join("")}
@@ -328,7 +361,7 @@ function renderBattle(match) {
       <div class="battle-header">
         <div>
           <h2>${self.className} VS ${opponent.className}</h2>
-          <span>${opponent.isBot ? t.bot : t.human} · ${t.live}</span>
+          <span>${opponent.isBot ? t.bot : opponent.isGhost ? t.ghost : t.human} \u00b7 ${t.live}</span>
         </div>
         <div class="live-badge" data-status>${match.status === "finished" ? "FINISHED" : "LIVE"}</div>
       </div>
@@ -470,12 +503,12 @@ function drawHud(ctx, match, frame, arenaH) {
     ctx.fillStyle = "rgba(255,255,255,.18)";
     ctx.fillRect(x, arenaH + 36, 200, 12);
     ctx.fillStyle = fighter.color;
-    ctx.fillRect(x, arenaH + 36, 200 * Math.max(0, item.hp) / 100, 12);
+    ctx.fillRect(x, arenaH + 36, 200 * Math.max(0, item.hp) / Math.max(1, item.maxHp || 100), 12);
     ctx.strokeStyle = "rgba(255,255,255,.45)";
     ctx.strokeRect(x, arenaH + 36, 200, 12);
     ctx.fillStyle = "#aaa398";
     ctx.font = "11px Microsoft YaHei";
-    ctx.fillText(fighter.classId === "trident" ? "\u7a7f\u523a\u7a81\u8fdb / \u7206\u53d1\u51fb\u9000" : "\u8840\u4e4b\u6495\u54ac / \u4f24\u5bb3\u5438\u8840", x, arenaH + 70);
+    ctx.fillText(classCopy[fighter.classId] || fighter.className, x, arenaH + 70);
   });
 }
 

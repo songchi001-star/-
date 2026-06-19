@@ -12,10 +12,8 @@ const DB_FILE = path.join(DATA_DIR, "db.json");
 const TOKEN_SECRET = ENV.TOKEN_SECRET || "dev-secret-change-before-production";
 
 const TICK_MS = 33;
-const BOT_WAIT_MS = 3500;
 const ARENA = { width: 460, height: 460 };
 
-const queue = [];
 const liveMatches = new Map();
 const userMatches = new Map();
 let memoryDb = { users: [], battles: [] };
@@ -23,11 +21,20 @@ let memoryDb = { users: [], battles: [] };
 const TEXT = {
   trident: "\u4e09\u53c9\u621f",
   vampire: "\u8fd1\u6218\u5438\u8840\u9b3c",
+  guardian: "\u94a2\u76fe\u536b",
+  pyromancer: "\u706b\u7130\u6cd5\u5e08",
+  assassin: "\u5f71\u5203\u523a\u5ba2",
+  storm: "\u98ce\u66b4\u672f\u58eb",
   pierce: "\u7a7f\u523a\u7a81\u8fdb",
   bite: "\u8840\u4e4b\u6495\u54ac",
   chase: "\u55dc\u8840\u8ffd\u51fb",
+  shieldBash: "\u76fe\u51fb",
+  flameBurst: "\u706b\u7130\u7206\u88c2",
+  shadowDash: "\u5f71\u5203\u7a81\u88ad",
+  lightning: "\u94fe\u5f0f\u95ea\u7535",
   hit: "\u649e\u51fb",
   pierceHit: "\u7a7f\u523a\u547d\u4e2d",
+  shadowHit: "\u5f71\u5203\u547d\u4e2d",
   usernameError: "\u7528\u6237\u540d\u9700\u8981 3-20 \u4f4d\u5c0f\u5199\u5b57\u6bcd\u3001\u6570\u5b57\u6216\u4e0b\u5212\u7ebf",
   passwordError: "\u5bc6\u7801\u81f3\u5c11 6 \u4f4d",
   usernameTaken: "\u7528\u6237\u540d\u5df2\u5b58\u5728",
@@ -45,7 +52,7 @@ const CLASSES = {
     color: "#f1bd3f",
     accent: "#fff1ad",
     hp: 100,
-    radius: 31,
+    radius: 38,
     speed: 6.15,
     baseDamage: 8,
     mass: 1.05,
@@ -57,12 +64,61 @@ const CLASSES = {
     color: "#9b2340",
     accent: "#ff7895",
     hp: 100,
-    radius: 32,
+    radius: 39,
     speed: 5.85,
     baseDamage: 7,
     mass: 1.15,
     lifesteal: 0.35,
-    skill: { name: TEXT.bite, cooldown: 3100, damage: 10, heal: 8, range: 64 }
+    skill: { name: TEXT.bite, cooldown: 3100, damage: 10, heal: 8, range: 72 }
+  },
+  guardian: {
+    id: "guardian",
+    name: TEXT.guardian,
+    color: "#4f8fbc",
+    accent: "#c8efff",
+    hp: 120,
+    radius: 41,
+    speed: 5.25,
+    baseDamage: 6,
+    mass: 1.35,
+    armor: 2,
+    skill: { name: TEXT.shieldBash, cooldown: 3400, damage: 9, knockback: 8.8, range: 78 }
+  },
+  pyromancer: {
+    id: "pyromancer",
+    name: TEXT.pyromancer,
+    color: "#e24b2f",
+    accent: "#ffd08a",
+    hp: 92,
+    radius: 37,
+    speed: 6.2,
+    baseDamage: 6,
+    mass: 0.95,
+    skill: { name: TEXT.flameBurst, cooldown: 3000, damage: 14, knockback: 4.2, range: 130 }
+  },
+  assassin: {
+    id: "assassin",
+    name: TEXT.assassin,
+    color: "#6f58d9",
+    accent: "#d7ccff",
+    hp: 88,
+    radius: 36,
+    speed: 7.15,
+    baseDamage: 9,
+    mass: 0.88,
+    skill: { name: TEXT.shadowDash, cooldown: 2800, damage: 15, duration: 520 }
+  },
+  storm: {
+    id: "storm",
+    name: TEXT.storm,
+    color: "#31a6a8",
+    accent: "#b8ffff",
+    hp: 96,
+    radius: 37,
+    speed: 6.55,
+    baseDamage: 7,
+    mass: 0.98,
+    skill: { name: TEXT.lightning, cooldown: 3200, damage: 11, range: 150 }
   }
 };
 
@@ -198,10 +254,12 @@ function makeFighter(player, classId, side, isBot = false) {
     accent: cls.accent,
     rating: player.rating,
     isBot,
+    isGhost: !!player.isGhost,
     hp: cls.hp,
     maxHp: cls.hp,
     radius: cls.radius,
     mass: cls.mass,
+    armor: cls.armor || 0,
     baseDamage: cls.baseDamage,
     x: side === "left" ? 120 : 340,
     y: side === "left" ? 150 : 310,
@@ -216,12 +274,29 @@ function makeFighter(player, classId, side, isBot = false) {
 
 function makeBotFor(user) {
   const names = ["AI-01", "AI-Blood", "AI-Trainer", "AI-Mirror"];
+  const classIds = Object.keys(CLASSES);
   return {
     id: randomId("bot"),
     username: "ai",
     nickname: names[Math.floor(Math.random() * names.length)],
     rating: clamp(user.rating + Math.floor(Math.random() * 81) - 40, 800, 1800),
-    selectedClass: user.selectedClass === "trident" ? "vampire" : "trident"
+    selectedClass: classIds[Math.floor(Math.random() * classIds.length)]
+  };
+}
+
+function makeAsyncOpponentFor(user) {
+  const candidates = readDb().users
+    .filter((candidate) => candidate.id !== user.id)
+    .sort((a, b) => Math.abs(a.rating - user.rating) - Math.abs(b.rating - user.rating));
+  const candidate = candidates[Math.floor(Math.random() * Math.min(candidates.length, 5))];
+  if (!candidate) return makeBotFor(user);
+  return {
+    id: candidate.id,
+    username: candidate.username,
+    nickname: candidate.nickname,
+    rating: candidate.rating,
+    selectedClass: CLASSES[candidate.selectedClass] ? candidate.selectedClass : "trident",
+    isGhost: true
   };
 }
 
@@ -235,6 +310,7 @@ function makeSnapshot(match, events = []) {
       x: Math.round(f.x),
       y: Math.round(f.y),
       hp: Math.round(f.hp),
+      maxHp: f.maxHp,
       radius: f.radius,
       skillActive: f.skillActiveUntil > match.elapsed
     })),
@@ -253,6 +329,12 @@ function applyHit(match, attacker, defender, events) {
     attacker.skillActiveUntil = 0;
     label = TEXT.pierceHit;
   }
+  if (attacker.classId === "assassin" && attacker.skillActiveUntil > match.elapsed) {
+    damage += attacker.skill.damage;
+    attacker.skillActiveUntil = 0;
+    label = TEXT.shadowHit;
+  }
+  damage = Math.max(1, damage - (defender.armor || 0));
   defender.hp = clamp(defender.hp - damage, 0, defender.maxHp);
   events.push({ type: "damage", fighterId: defender.id, amount: damage, text: label });
   if (attacker.lifesteal) {
@@ -278,7 +360,7 @@ function stepMatch(match) {
         f.skillActiveUntil = match.elapsed + f.skill.duration;
         f.nextSkillAt = match.elapsed + f.skill.cooldown;
         events.push({ type: "skill", fighterId: f.id, text: TEXT.pierce });
-      } else {
+      } else if (f.classId === "vampire") {
         f.nextSkillAt = match.elapsed + f.skill.cooldown;
         const dist = Math.hypot(other.x - f.x, other.y - f.y);
         if (dist <= f.skill.range) {
@@ -291,6 +373,60 @@ function stepMatch(match) {
           f.vx += dir.x * 1.15;
           f.vy += dir.y * 1.15;
           events.push({ type: "skill", fighterId: f.id, text: TEXT.chase });
+        }
+      } else if (f.classId === "guardian") {
+        f.nextSkillAt = match.elapsed + f.skill.cooldown;
+        const dist = Math.hypot(other.x - f.x, other.y - f.y);
+        const dir = unitVector(f, other);
+        if (dist <= f.skill.range) {
+          const damage = Math.max(1, f.skill.damage - (other.armor || 0));
+          other.hp = clamp(other.hp - damage, 0, other.maxHp);
+          other.vx += dir.x * f.skill.knockback;
+          other.vy += dir.y * f.skill.knockback;
+          f.hp = clamp(f.hp + 3, 0, f.maxHp);
+          events.push({ type: "damage", fighterId: other.id, amount: damage, text: TEXT.shieldBash });
+          events.push({ type: "heal", fighterId: f.id, amount: 3 });
+        } else {
+          f.vx += dir.x * 1.05;
+          f.vy += dir.y * 1.05;
+          events.push({ type: "skill", fighterId: f.id, text: TEXT.shieldBash });
+        }
+      } else if (f.classId === "pyromancer") {
+        f.nextSkillAt = match.elapsed + f.skill.cooldown;
+        const dist = Math.hypot(other.x - f.x, other.y - f.y);
+        const dir = unitVector(f, other);
+        if (dist <= f.skill.range) {
+          const damage = Math.max(1, f.skill.damage - (other.armor || 0));
+          other.hp = clamp(other.hp - damage, 0, other.maxHp);
+          other.vx += dir.x * f.skill.knockback;
+          other.vy += dir.y * f.skill.knockback;
+          events.push({ type: "damage", fighterId: other.id, amount: damage, text: TEXT.flameBurst });
+        } else {
+          f.vx += dir.x * 0.8;
+          f.vy += dir.y * 0.8;
+          events.push({ type: "skill", fighterId: f.id, text: TEXT.flameBurst });
+        }
+      } else if (f.classId === "assassin") {
+        const dir = unitVector(f, other);
+        f.vx = dir.x * 11.4;
+        f.vy = dir.y * 11.4;
+        f.skillActiveUntil = match.elapsed + f.skill.duration;
+        f.nextSkillAt = match.elapsed + f.skill.cooldown;
+        events.push({ type: "skill", fighterId: f.id, text: TEXT.shadowDash });
+      } else if (f.classId === "storm") {
+        f.nextSkillAt = match.elapsed + f.skill.cooldown;
+        const dist = Math.hypot(other.x - f.x, other.y - f.y);
+        const dir = unitVector(f, other);
+        if (dist <= f.skill.range) {
+          const damage = Math.max(1, f.skill.damage - (other.armor || 0));
+          other.hp = clamp(other.hp - damage, 0, other.maxHp);
+          other.vx += (Math.random() - 0.5) * 4 + dir.x * 2.5;
+          other.vy += (Math.random() - 0.5) * 4 + dir.y * 2.5;
+          events.push({ type: "damage", fighterId: other.id, amount: damage, text: TEXT.lightning });
+        } else {
+          f.vx += dir.x * 1.25;
+          f.vy += dir.y * 1.25;
+          events.push({ type: "skill", fighterId: f.id, text: TEXT.lightning });
         }
       }
     }
@@ -368,7 +504,8 @@ function publicMatch(match, since = 0) {
       color: f.color,
       accent: f.accent,
       rating: f.rating,
-      isBot: f.isBot
+      isBot: f.isBot,
+      isGhost: f.isGhost
     })),
     snapshots: match.snapshots.filter((s) => s.t > since).slice(-40),
     latest: match.snapshots[match.snapshots.length - 1]
@@ -380,7 +517,7 @@ function finishMatch(match) {
   match.finishedSaved = true;
   clearInterval(match.timer);
   const db = readDb();
-  const humanIds = match.fighters.filter((f) => !f.isBot).map((f) => f.id);
+  const humanIds = match.fighters.filter((f) => !f.isBot && !f.isGhost).map((f) => f.id);
   for (const user of db.users) {
     if (!humanIds.includes(user.id)) continue;
     const won = match.winnerId === user.id;
@@ -394,7 +531,7 @@ function finishMatch(match) {
     id: match.id,
     createdAt: new Date().toISOString(),
     winnerId: match.winnerId,
-    fighters: match.fighters.map((f) => ({ id: f.id, name: f.name, classId: f.classId, isBot: f.isBot }))
+    fighters: match.fighters.map((f) => ({ id: f.id, name: f.name, classId: f.classId, isBot: f.isBot, isGhost: f.isGhost }))
   });
   db.battles = db.battles.slice(-200);
   writeDb(db);
@@ -419,7 +556,7 @@ function startMatch(players) {
   match.timer = setInterval(() => stepMatch(match), TICK_MS);
   liveMatches.set(match.id, match);
   for (const player of players) {
-    if (!player.id.startsWith("bot_")) userMatches.set(player.id, match.id);
+    if (!player.id.startsWith("bot_") && !player.isGhost) userMatches.set(player.id, match.id);
   }
   return match;
 }
@@ -427,22 +564,7 @@ function startMatch(players) {
 function enqueueUser(user) {
   const currentMatchId = userMatches.get(user.id);
   if (currentMatchId && liveMatches.has(currentMatchId)) return currentMatchId;
-  const existing = queue.find((q) => q.user.id === user.id);
-  if (existing) return null;
-  const opponentIndex = queue.findIndex((q) => Math.abs(q.user.rating - user.rating) <= 300 && q.user.id !== user.id);
-  if (opponentIndex >= 0) {
-    const [opponent] = queue.splice(opponentIndex, 1);
-    clearTimeout(opponent.timer);
-    return startMatch([opponent.user, user]).id;
-  }
-  const entry = { user, timer: null };
-  entry.timer = setTimeout(() => {
-    const idx = queue.indexOf(entry);
-    if (idx !== -1) queue.splice(idx, 1);
-    startMatch([user, makeBotFor(user)]);
-  }, BOT_WAIT_MS);
-  queue.push(entry);
-  return null;
+  return startMatch([user, makeAsyncOpponentFor(user)]).id;
 }
 
 async function handleApi(req, res, pathname, searchParams) {
@@ -478,7 +600,7 @@ async function handleApi(req, res, pathname, searchParams) {
         rating: 1000,
         wins: 0,
         losses: 0,
-        selectedClass: body.selectedClass === "vampire" ? "vampire" : "trident",
+        selectedClass: CLASSES[body.selectedClass] ? body.selectedClass : "trident",
         createdAt: new Date().toISOString()
       };
       db.users.push(user);
@@ -515,11 +637,6 @@ async function handleApi(req, res, pathname, searchParams) {
     }
 
     if (req.method === "POST" && pathname === "/api/match/cancel") {
-      const index = queue.findIndex((q) => q.user.id === user.id);
-      if (index >= 0) {
-        clearTimeout(queue[index].timer);
-        queue.splice(index, 1);
-      }
       return json(res, 200, { ok: true });
     }
 

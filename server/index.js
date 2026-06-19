@@ -11,7 +11,7 @@ const DATA_DIR = path.join(ROOT, "data");
 const DB_FILE = path.join(DATA_DIR, "db.json");
 const TOKEN_SECRET = ENV.TOKEN_SECRET || "dev-secret-change-before-production";
 
-const TICK_MS = 50;
+const TICK_MS = 33;
 const BOT_WAIT_MS = 3500;
 const ARENA = { width: 460, height: 460 };
 
@@ -46,10 +46,10 @@ const CLASSES = {
     accent: "#fff1ad",
     hp: 100,
     radius: 31,
-    speed: 4.15,
+    speed: 6.15,
     baseDamage: 8,
     mass: 1.05,
-    skill: { name: TEXT.pierce, cooldown: 4400, damage: 12, knockback: 6.5, duration: 720 }
+    skill: { name: TEXT.pierce, cooldown: 3600, damage: 12, knockback: 7.5, duration: 620 }
   },
   vampire: {
     id: "vampire",
@@ -58,11 +58,11 @@ const CLASSES = {
     accent: "#ff7895",
     hp: 100,
     radius: 32,
-    speed: 3.95,
+    speed: 5.85,
     baseDamage: 7,
     mass: 1.15,
     lifesteal: 0.35,
-    skill: { name: TEXT.bite, cooldown: 3600, damage: 10, heal: 8, range: 58 }
+    skill: { name: TEXT.bite, cooldown: 3100, damage: 10, heal: 8, range: 64 }
   }
 };
 
@@ -273,8 +273,8 @@ function stepMatch(match) {
     if (match.elapsed >= f.nextSkillAt) {
       if (f.classId === "trident") {
         const dir = unitVector(f, other);
-        f.vx = dir.x * 7.4;
-        f.vy = dir.y * 7.4;
+        f.vx = dir.x * 10.2;
+        f.vy = dir.y * 10.2;
         f.skillActiveUntil = match.elapsed + f.skill.duration;
         f.nextSkillAt = match.elapsed + f.skill.cooldown;
         events.push({ type: "skill", fighterId: f.id, text: TEXT.pierce });
@@ -303,7 +303,7 @@ function stepMatch(match) {
     f.vy *= 0.998;
     const cls = CLASSES[f.classId];
     const speed = Math.hypot(f.vx, f.vy);
-    const maxSpeed = f.skillActiveUntil > match.elapsed ? 8.8 : cls.speed + 1.2;
+    const maxSpeed = f.skillActiveUntil > match.elapsed ? 11.4 : cls.speed + 1.5;
     if (speed > maxSpeed) {
       f.vx = (f.vx / speed) * maxSpeed;
       f.vy = (f.vy / speed) * maxSpeed;
@@ -322,7 +322,7 @@ function stepMatch(match) {
   const dy = b.y - a.y;
   const dist = Math.hypot(dx, dy) || 1;
   const minDist = a.radius + b.radius;
-  if (dist < minDist && match.elapsed - match.lastCollisionAt > 320) {
+  if (dist < minDist && match.elapsed - match.lastCollisionAt > 220) {
     match.lastCollisionAt = match.elapsed;
     const nx = dx / dist;
     const ny = dy / dist;

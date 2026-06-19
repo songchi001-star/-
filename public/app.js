@@ -88,7 +88,8 @@ const state = {
   match: null,
   latestT: 0,
   floating: [],
-  seenEvents: new Set()
+  seenEvents: new Set(),
+  displayFighters: new Map()
 };
 
 function cls(id) {
@@ -319,6 +320,7 @@ function renderBattle(match) {
   state.latestT = match.latest?.t || 0;
   state.floating = [];
   state.seenEvents = new Set();
+  state.displayFighters = new Map();
   const self = match.fighters.find((f) => f.id === state.user.id);
   const opponent = match.fighters.find((f) => f.id !== state.user.id);
   renderShell(`
@@ -349,7 +351,7 @@ function renderBattle(match) {
     await loadLeaderboard();
     renderRanked();
   });
-  state.battlePoll = setInterval(pollBattle, 250);
+  state.battlePoll = setInterval(pollBattle, 100);
   drawLoop();
 }
 
@@ -404,60 +406,36 @@ function drawArena(ctx, match) {
   const fighterMap = new Map(match.fighters.map((f) => [f.id, f]));
   for (const item of frame.fighters) {
     const fighter = fighterMap.get(item.id);
+    let display = state.displayFighters.get(item.id);
+    if (!display) {
+      display = { x: item.x, y: item.y };
+      state.displayFighters.set(item.id, display);
+    } else {
+      display.x += (item.x - display.x) * 0.42;
+      display.y += (item.y - display.y) * 0.42;
+    }
     const pulse = item.skillActive ? Math.sin(performance.now() / 80) * 4 + 6 : 0;
     const radius = item.radius || 31;
-    const gradient = ctx.createRadialGradient(item.x - 9, item.y - 10, 4, item.x, item.y, radius + pulse);
+    const x = display.x;
+    const y = display.y;
+    const gradient = ctx.createRadialGradient(x - 9, y - 10, 4, x, y, radius + pulse);
     gradient.addColorStop(0, fighter.accent);
     gradient.addColorStop(0.55, fighter.color);
     gradient.addColorStop(1, "#060606");
     ctx.beginPath();
     ctx.fillStyle = gradient;
-    ctx.arc(item.x, item.y, radius + pulse, 0, Math.PI * 2);
+    ctx.arc(x, y, radius + pulse, 0, Math.PI * 2);
     ctx.fill();
     ctx.strokeStyle = item.skillActive ? "#fff0a8" : "rgba(255,255,255,.42)";
     ctx.lineWidth = item.skillActive ? 4 : 2;
     ctx.stroke();
     ctx.fillStyle = "#fff";
-    ctx.font = "900 22px Georgia";
-    ctx.fillText(Math.max(0, item.hp), item.x, item.y + 1);
-    if (fighter.classId === "trident") drawTrident(ctx, item.x, item.y);
-    if (fighter.classId === "vampire") drawFangs(ctx, item.x, item.y);
+    ctx.font = "900 23px Georgia";
+    ctx.fillText(Math.max(0, item.hp), x, y + 1);
   }
 
   drawFloating(ctx);
   drawHud(ctx, match, frame, arenaH);
-}
-
-function drawTrident(ctx, x, y) {
-  ctx.save();
-  ctx.translate(x + 24, y - 23);
-  ctx.rotate(-0.62);
-  ctx.strokeStyle = "#f1bd3f";
-  ctx.lineWidth = 4;
-  ctx.beginPath();
-  ctx.moveTo(0, 24);
-  ctx.lineTo(0, -24);
-  ctx.moveTo(-12, -14);
-  ctx.lineTo(0, -29);
-  ctx.lineTo(12, -14);
-  ctx.moveTo(-12, -4);
-  ctx.lineTo(-12, -20);
-  ctx.moveTo(12, -4);
-  ctx.lineTo(12, -20);
-  ctx.stroke();
-  ctx.restore();
-}
-
-function drawFangs(ctx, x, y) {
-  ctx.fillStyle = "#fff";
-  ctx.beginPath();
-  ctx.moveTo(x - 12, y - 3);
-  ctx.lineTo(x - 5, y + 14);
-  ctx.lineTo(x, y - 3);
-  ctx.moveTo(x + 6, y - 3);
-  ctx.lineTo(x + 13, y + 14);
-  ctx.lineTo(x + 18, y - 3);
-  ctx.fill();
 }
 
 function drawFloating(ctx) {

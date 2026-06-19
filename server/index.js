@@ -447,6 +447,16 @@ function enqueueUser(user) {
 
 async function handleApi(req, res, pathname, searchParams) {
   try {
+    if (req.method === "GET" && pathname === "/api/health") {
+      return json(res, 200, {
+        ok: true,
+        root: ROOT,
+        publicDir: PUBLIC_DIR,
+        publicExists: fs.existsSync(PUBLIC_DIR),
+        files: fs.existsSync(PUBLIC_DIR) ? fs.readdirSync(PUBLIC_DIR).slice(0, 20) : []
+      });
+    }
+
     if (req.method === "GET" && pathname === "/api/classes") {
       return json(res, 200, { classes: Object.values(CLASSES) });
     }
@@ -546,15 +556,22 @@ async function handleApi(req, res, pathname, searchParams) {
 
 function serveStatic(req, res, pathname) {
   const safePath = pathname === "/" ? "/index.html" : pathname;
-  const filePath = path.normalize(path.join(PUBLIC_DIR, safePath));
+  const filePath = path.resolve(PUBLIC_DIR, `.${safePath}`);
   if (!filePath.startsWith(PUBLIC_DIR)) {
     res.writeHead(403);
     return res.end("Forbidden");
   }
   fs.readFile(filePath, (err, content) => {
     if (err) {
-      res.writeHead(404);
-      return res.end("Not found");
+      const fallback = path.join(PUBLIC_DIR, "index.html");
+      return fs.readFile(fallback, (fallbackErr, fallbackContent) => {
+        if (fallbackErr) {
+          res.writeHead(404);
+          return res.end("Not found");
+        }
+        res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
+        return res.end(fallbackContent);
+      });
     }
     const types = {
       ".html": "text/html; charset=utf-8",

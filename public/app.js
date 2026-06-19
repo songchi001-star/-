@@ -37,8 +37,47 @@ const classCopy = {
   vampire: t.vampireDesc
 };
 
+const fallbackClasses = [
+  {
+    id: "trident",
+    name: "\u4e09\u53c9\u621f",
+    color: "#f1bd3f",
+    accent: "#fff1ad"
+  },
+  {
+    id: "vampire",
+    name: "\u8fd1\u6218\u5438\u8840\u9b3c",
+    color: "#9b2340",
+    accent: "#ff7895"
+  }
+];
+
+function storageGet(key) {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return "";
+  }
+}
+
+function storageSet(key, value) {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // Private browsing or restricted webviews can block storage.
+  }
+}
+
+function storageRemove(key) {
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    // Ignore storage cleanup failures.
+  }
+}
+
 const state = {
-  token: localStorage.getItem("ball-duel-token") || "",
+  token: storageGet("ball-duel-token") || "",
   user: null,
   classes: [],
   leaderboard: [],
@@ -60,14 +99,18 @@ async function api(path, options = {}) {
   const headers = { "content-type": "application/json", ...(options.headers || {}) };
   if (state.token) headers.authorization = `Bearer ${state.token}`;
   const response = await fetch(path, { ...options, headers });
-  const data = await response.json();
+  const data = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(data.error || "\u8bf7\u6c42\u5931\u8d25");
   return data;
 }
 
 async function boot() {
-  const classData = await api("/api/classes");
-  state.classes = classData.classes;
+  try {
+    const classData = await api("/api/classes");
+    state.classes = classData.classes || fallbackClasses;
+  } catch {
+    state.classes = fallbackClasses;
+  }
   if (state.token) {
     try {
       const data = await api("/api/me");
@@ -76,7 +119,7 @@ async function boot() {
       renderRanked();
       return;
     } catch {
-      localStorage.removeItem("ball-duel-token");
+      storageRemove("ball-duel-token");
       state.token = "";
     }
   }
@@ -165,7 +208,7 @@ async function onAuthSubmit(event) {
     const data = await api(endpoint, { method: "POST", body: JSON.stringify(body) });
     state.token = data.token;
     state.user = data.user;
-    localStorage.setItem("ball-duel-token", state.token);
+    storageSet("ball-duel-token", state.token);
     await loadLeaderboard();
     renderRanked();
   } catch (error) {
@@ -474,7 +517,7 @@ function logoutUser() {
   state.token = "";
   state.user = null;
   state.match = null;
-  localStorage.removeItem("ball-duel-token");
+  storageRemove("ball-duel-token");
   renderAuth();
 }
 
